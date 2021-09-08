@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useMemo} from 'react'
 import './Styles/App.css'
 import PostList from "./components/PostList";
 import MyButton from "./components/UI/button/MyButton";
@@ -14,6 +14,7 @@ function App() {
       ])
 
     const [selectedSort, setSelectedSort] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
 
 const createPosts = (newPost)=>{
     setPosts([...posts, newPost])
@@ -23,9 +24,22 @@ const removePost = (post)=> {
       setPosts(posts.filter(p => p.id !== post.id))
 }
 
+    const sortedPost = useMemo(() => {
+        console.log('Отрабтотала функция сортед пост')
+        if (selectedSort){
+            return [...posts].sort((a,b) => a[selectedSort].localeCompare(b[selectedSort]))
+        }
+        return posts
+    }, [selectedSort, posts])
+
+
+ const  searchAndSorted = useMemo(()=> {
+        return sortedPost.filter(post => post.title.toLowerCase().includes(searchQuery))
+ }, [searchQuery, sortedPost])
+
+    
 const sortPost = (sort) => {
       setSelectedSort(sort)
-      setPosts([...posts].sort((a,b) => a[sort].localeCompare(b[sort])))
 }
 
     return (
@@ -33,6 +47,12 @@ const sortPost = (sort) => {
         <PostForm create = {createPosts} />
         <hr style={{margin:'15px 0'}}/>
         <div>
+            <MyInput
+                value = {searchQuery}
+                type="text"
+                onChange = {e => setSearchQuery(e.target.value)}
+                placeholder = "Поиск..."
+            />
             <MySelect
                 value={selectedSort}
                 onChange={sortPost}
@@ -43,8 +63,8 @@ const sortPost = (sort) => {
                 ]}
             />
         </div>
-        {posts.length !== 0
-        ? <PostList remove = {removePost} posts={posts} title={'Посты про  JavaScript'}/>
+        {searchAndSorted.length !== 0
+        ? <PostList remove = {removePost} posts={searchAndSorted} title={'Посты про  JavaScript'}/>
         : <h1 style={{textAlign:"center"}}>Посты не найдены</h1>
         }
 
