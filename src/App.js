@@ -1,4 +1,4 @@
-import React, {useState, useMemo} from 'react'
+import React, {useState} from 'react'
 import './Styles/App.css'
 import PostList from "./components/PostList";
 import MyButton from "./components/UI/button/MyButton";
@@ -6,6 +6,8 @@ import MyInput from "./components/UI/input/MyInput";
 import PostForm from "./components/PostForm";
 import MySelect from "./components/UI/select/MySelect";
 import PostFilter from "./components/PostFilter";
+import MyModal from "./components/MyModal/MyModal";
+import {usePosts} from "./hooks/usePosts";
 
 function App() {
   const [posts, setPosts] = useState([
@@ -15,32 +17,26 @@ function App() {
       ])
 
     const [filter, setFilter] = useState({sort: '', query: ''})
+    const [modal, setModal] = useState(false)
+
+  const searchAndSorted = usePosts(posts, filter.sort, filter.query)
 
 const createPosts = (newPost)=>{
     setPosts([...posts, newPost])
+    setModal(false)
 }
 
 const removePost = (post)=> {
       setPosts(posts.filter(p => p.id !== post.id))
 }
-
-    const sortedPost = useMemo(() => {
-        console.log('Отрабтотала функция сортед пост')
-        if (filter.sort){
-            return [...posts].sort((a,b) => a[filter.sort].localeCompare(b[filter.sort]))
-        }
-        return posts
-    }, [filter.sort, posts])
-
-
- const  searchAndSorted = useMemo(()=> {
-        return sortedPost.filter(post => post.title.toLowerCase().includes(filter.query))
- }, [filter.query, sortedPost])
-
-
     return (
     <div className="App">
-        <PostForm create = {createPosts} />
+        <MyButton style = {{marginTop: 30}} onClick = {() => setModal(true)}>
+            Создать пост
+        </MyButton>
+        <MyModal visible={modal} setVisible={setModal} >
+            <PostForm create = {createPosts} />
+        </MyModal>
         <hr style={{margin:'15px 0'}}/>
         <PostFilter
             filter = {filter}
